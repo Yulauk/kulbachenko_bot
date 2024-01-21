@@ -38,26 +38,23 @@ async def table_free_consult_message():
                     db=os.getenv('DATABASE_NAME')) as conn:
                 async with conn.cursor() as cursor:
                     try:
-                        await cursor.execute("SELECT * FROM free_consult;")
-                        records = await cursor.fetchall()
-                        len_records = len(records)
+                        # Get the maximum ID
+                        await cursor.execute("SELECT MAX(id) FROM free_consult;")
+                        max_id = await cursor.fetchone()
+                        if max_id:
+                            max_id = max_id[0]
 
-                        await asyncio.sleep(60)
-                        await cursor.execute("SELECT * FROM free_consult;")
-                        records = await cursor.fetchall()
+                            await asyncio.sleep(60)
 
-                        if len(records) > len_records:
-                            await cursor.execute(f"SELECT * FROM free_consult WHERE id>{len_records};")
-                            new_records = await cursor.fetchall()
-                            lst_message = [i for sub in new_records for i in sub]
-
+                            # Check for new records
+                            await cursor.execute(f"SELECT * FROM free_consult WHERE id>{max_id};")
+                            lst_message = [i for sub in await cursor.fetchall() for i in sub]
                             message = (f'NEW *free consult*\n'
                                        f'id:{lst_message[0]}\n'
                                        f'name: {lst_message[1]}\n'
                                        f'contact: {lst_message[2]}\n'
                                        f'comment: {lst_message[3]}\n'
                                        f'date: {lst_message[4].isoformat()}')
-                            print('>>>', message)
                             user_id = CHAT_ID
                             await app.bot.send_message(chat_id=user_id, text=message)
 
@@ -77,18 +74,17 @@ async def table_contact_message():
                     db=os.getenv('DATABASE_NAME')) as conn:
                 async with conn.cursor() as cursor:
                     try:
-                        await cursor.execute("SELECT * FROM contact;")
-                        records = await cursor.fetchall()
-                        len_records = len(records)
+                        # Get the maximum ID
+                        await cursor.execute("SELECT MAX(id) FROM contact;")
+                        max_id = await cursor.fetchone()
+                        if max_id:
+                            max_id = max_id[0]
 
-                        await asyncio.sleep(60)
-                        await cursor.execute("SELECT * FROM contact;")
-                        records = await cursor.fetchall()
+                            await asyncio.sleep(60)
 
-                        if len(records) > len_records:
-                            await cursor.execute(f"SELECT * FROM contact WHERE id>{len_records};")
-                            new_records = await cursor.fetchall()
-                            lst_message = [i for sub in new_records for i in sub]
+                            # Check for new records
+                            await cursor.execute(f"SELECT * FROM contact WHERE id>{max_id};")
+                            lst_message = [i for sub in await cursor.fetchall() for i in sub]
 
                             message = (f'NEW {"*CONTACT US*"}\n'
                                        f'id:{lst_message[0]}\n'
